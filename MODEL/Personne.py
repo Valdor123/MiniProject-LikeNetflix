@@ -243,8 +243,6 @@ class Client(Personne):
             raise ValueError("Nombre de caractere insuffusant")
     passWord = property(_getPassWord, _setPassWord)
     
-    #L'ACCESSEUR DE L'ATTRIBUT _password
-    passWord = property(_getPassword, _setPassword)
 
     #ICI NOUS AVONS UNE METHODES POUR COMPTER LE NOMBRE DE PERSONNE CREER
     def incrementerNombreDeClient(cls):
@@ -280,7 +278,7 @@ class Client(Personne):
         return Client.listeClient.pop(id)
     supprimerClient = staticmethod(_supprimerClient)
     
-    
+
     def modifierCLient(self, nom, prenom, sexe, dateDinscription, courriel, password):
         # ON MODIFIE LES VALEURS DES SES DIFFERENTS ATTRIBUT
         self.nom = nom
