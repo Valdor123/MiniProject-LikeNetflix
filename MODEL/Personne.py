@@ -87,13 +87,9 @@ class Employe(Personne):
         Personne.__init__(self, nom, prenom, sexe)
         self._dateDambauche = dateDambauche
         self._codeUtilisateur = codeUtilisateur
-
-        #CRYPTAGE DU MOT DE PASSE
-        hash = hashlib.new('sha512_256')
-        #ON ENCODE LE MOT DE PASSE
-        hash.update(passWord.encode(encoding="utf-8"))
-        self._password = hash.hexdigest()
-
+        self._passWord = ""
+        #ICI ON UTILISE LA METHODE la propriete passWord POUR DEFINIR COORECTEMENT LE MOTE DE PASSE
+        self.passWord = passWord
         self._typeDacces = typeDacces
 
         #ON AJOUTE L'EMPLYER CREE A LA LISTE DE EMPLOYE
@@ -118,7 +114,14 @@ class Employe(Personne):
     def _getPassWord(self):
         return self._password
     def _setPassWord(self ,nouveau):
-        self._password = nouveau
+        if(len(nouveau) >= 8):
+            #CRYPTAGE DU MOT DE PASSE
+            hash = hashlib.new('sha512_256')
+            #ON ENCODE LE MOT DE PASSE
+            hash.update(nouveau.encode(encoding="utf-8"))
+            self._password = hash.hexdigest()
+        else:
+            raise ValueError("Nombre de caractere insuffusant")
     passWord = property(_getPassWord, _setPassWord)
 
 
@@ -181,9 +184,9 @@ class Client(Personne):
     listeClient = {}
     def __init__(self, nom, prenom, sexe, dateDinscription, courriel, password):
         Personne.__init__(self, nom, prenom, sexe)
-        self._identifiant = Client.incrementerNombreDeClient()
         self._dateDinscription = dateDinscription
-        self._courriel = courriel
+        self._courriel = ""
+        self.courriel = courriel
         self._password = password
         #ON AJOUTE LE CLIENT CREE A LA LISTE DES CLIENTS
         Client.addClient(self._identifiant, self)
@@ -207,8 +210,17 @@ class Client(Personne):
         return self._courriel
     
     #LA FONCTION POUR DEFINIR _courriel
+    """
+    ``ON DOIT S'ASSURER QU LE COURREIL ENTRER EST UNIQUE
+    SI LE COURIEL EXISTE ON LEVE UN EXECPTION
+    SI NON ON ENREGISTRE NORMALEMENT
+    """
     def _setCourriel(self ,nouveau):
-        self._courriel = nouveau
+        for elt in Client.listeClient:
+            if(Client.listeClient[elt].courriel == nouveau):
+                raise ValueError("CE COURRIEL EXISTE DEJA")
+            else:
+                self._courriel = nouveau
     
     #L'ACCESSEUR DE L'ATTRIBUT _courriel
     courriel = property(_getCourriel, _setCourriel)
@@ -216,12 +228,20 @@ class Client(Personne):
 
     #L'ENCAPSULATION DE L'ATTRIBUT _password
     #LA FONCTION POUR RETOURNER _password
-    def _getPassword(self):
+    def _getPassWord(self):
         return self._password
     
     #LA FONCTION POUR DEFINIR _password
-    def _setPassword(self ,nouveau):
-        self._password = nouveau
+    def _setPassWord(self ,nouveau):
+        if(len(nouveau) >= 8):
+            #CRYPTAGE DU MOT DE PASSE
+            hash = hashlib.new('sha512_256')
+            #ON ENCODE LE MOT DE PASSE
+            hash.update(nouveau.encode(encoding="utf-8"))
+            self._password = hash.hexdigest()
+        else:
+            raise ValueError("Nombre de caractere insuffusant")
+    passWord = property(_getPassWord, _setPassWord)
     
     #L'ACCESSEUR DE L'ATTRIBUT _password
     passWord = property(_getPassword, _setPassword)
@@ -234,8 +254,17 @@ class Client(Personne):
 
     
     #AJOUT D'UN CLIENT DANS LA LISTE
+    """
+    ``CETTE METHODE VA REOURNE VRAI SI LE CLIENT A ETE AJOUTER A LA LISTE
+    ``SI NON SA VA SE REEXECUTER
+    """
     def _addClient(id, val):
         Client.listeClient[id] = val
+        if(Client.listeClient[id].identifiant == id):
+            return True
+        else:
+            Client.addClient(id, val)
+            return False
     addClient = staticmethod(_addClient)
 
     #OBTENIR UN CLIENT 
@@ -244,10 +273,25 @@ class Client(Personne):
     obtenirClient = staticmethod(_obtenirClient)
 
     #SUPPRIMER UN CLIENT
+    """
+    ``CETTE METHORE VA RETOURNE LE NOM LE CLEIT SUPPRIMER POUR CONFIRMER LA SUPPRESSION
+    """
     def _supprimerClient(id):
-        Client.listeClient.pop(id)
+        return Client.listeClient.pop(id)
     supprimerClient = staticmethod(_supprimerClient)
     
+    
+    def modifierCLient(self, nom, prenom, sexe, dateDinscription, courriel, password):
+        # ON MODIFIE LES VALEURS DES SES DIFFERENTS ATTRIBUT
+        self.nom = nom
+        self.prenom = prenom
+        self.sexe = sexe
+        self.dateDinscription = dateDinscription
+        self.courriel = courriel
+        self.passWord = password
+        #ON MET A JOUR CA VALEUR DANS LA LISTE
+        Client.listeClient[courriel] = self
+
     #LISTE DE TOUS LES CLIENTS
     def _listeDeTousLesClients():
         listeC = ""
@@ -257,7 +301,8 @@ class Client(Personne):
     listeDeTousLesClients = staticmethod(_listeDeTousLesClients)
     
     supprimerClient = staticmethod(_supprimerClient)
-   
+
+
 class Acteur(Personne):
     nombreDeActeur = 0
     def __init__(self, nom, prenom, sexe, nomPersonnage, dateDebutEmploi, dateFinEmploi, cachet):
